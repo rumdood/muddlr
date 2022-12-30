@@ -1,8 +1,8 @@
-﻿using FingerTree.Persons;
+using Muddlr.Persons;
 using Humanizer;
 using LiteDB;
 
-namespace FingerTree.Api;
+namespace Muddlr.Api;
 
 internal class LiteDbDataSource: IPersonRepository
 {

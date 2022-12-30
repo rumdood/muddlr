@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <ContainerImageName>FingerTree</ContainerImageName>
+        <ContainerImageName>Muddlr</ContainerImageName>
         <ContainerImageTag>latest</ContainerImageTag>
     </PropertyGroup>
 
@@ -35,7 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FingerTree.Core\FingerTree.Core.csproj" />
+      <ProjectReference Include="..\Muddlr.Core\Muddlr.Core.csproj" />
     </ItemGroup>
 
 </Project>

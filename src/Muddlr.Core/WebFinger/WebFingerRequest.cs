@@ -1,11 +1,13 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
-namespace FingerTree.WebFinger;
+namespace Muddlr.WebFinger;
 
 public class WebFingerRequest
 {
+    [Required]
     [JsonProperty("resource")]
-    public required string Resource { get; set; }
+    public string Resource { get; set; }
 
     [JsonProperty("rel")] 
     public string[] Relationships { get; set; } = Array.Empty<string>();

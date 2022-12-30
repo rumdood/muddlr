@@ -1,4 +1,4 @@
-﻿namespace FingerTree.Persons;
+namespace Muddlr.Persons;
 
 public interface IPersonRepository
 {

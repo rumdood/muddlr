@@ -1,8 +1,8 @@
 using Serilog;
 using System.Text.Json.Serialization;
-using FingerTree.Api;
-using FingerTree.Persons;
-using FingerTree.WebFinger;
+using Muddlr.Api;
+using Muddlr.Persons;
+using Muddlr.WebFinger;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/", () => Results.Ok("FingerTree 0.1 OK"));
+app.MapGet("/", () => Results.Ok("Muddlr 0.1 OK"));
 app.MapPersonApi();
 app.MapWebFingerApi();
 

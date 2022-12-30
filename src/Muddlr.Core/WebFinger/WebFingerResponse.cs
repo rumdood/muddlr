@@ -1,11 +1,13 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
-namespace FingerTree.WebFinger;
+namespace Muddlr.WebFinger;
 
 public class WebFingerResponse
 {
+    [Required]
     [JsonProperty("subject")]
-    public required string Subject { get; set; }
+    public string Subject { get; set; }
     [JsonProperty("aliases", NullValueHandling = NullValueHandling.Ignore)]
     public Uri[]? Aliases { get; set; } = Array.Empty<Uri>();
     [JsonProperty("links", NullValueHandling = NullValueHandling.Ignore)]

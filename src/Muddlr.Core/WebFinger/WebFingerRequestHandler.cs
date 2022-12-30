@@ -1,6 +1,6 @@
-﻿using FingerTree.Persons;
+using Muddlr.Persons;
 
-namespace FingerTree.WebFinger;
+namespace Muddlr.WebFinger;
 
 public class WebFingerRequestHandler
 {

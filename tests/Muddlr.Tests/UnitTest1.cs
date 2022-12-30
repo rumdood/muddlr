@@ -1,4 +1,4 @@
-namespace FingerTree.Tests;
+namespace Muddlr.Tests;
 
 public class UnitTest1
 {

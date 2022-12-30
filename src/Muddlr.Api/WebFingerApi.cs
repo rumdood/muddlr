@@ -1,8 +1,8 @@
-﻿using FingerTree.WebFinger;
+using Muddlr.WebFinger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace FingerTree.Api;
+namespace Muddlr.Api;
 
 internal static class WebFingerApi
 {

@@ -1,11 +1,13 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
-namespace FingerTree.WebFinger;
+namespace Muddlr.WebFinger;
 
 public class WebFingerLink
 {
     [JsonProperty("rel")]
-    public required string Relationship { get; set; }
+    [Required]
+    public string Relationship { get; set; }
 
     [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
     public string? Type { get; set; }

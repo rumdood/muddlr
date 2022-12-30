@@ -1,4 +1,4 @@
-﻿namespace FingerTree;
+namespace Muddlr;
 
 public static class EnumerableExtensions
 {

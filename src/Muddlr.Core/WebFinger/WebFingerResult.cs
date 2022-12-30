@@ -1,4 +1,4 @@
-﻿namespace FingerTree.WebFinger;
+namespace Muddlr.WebFinger;
 
 public enum WebFingerResult
 {

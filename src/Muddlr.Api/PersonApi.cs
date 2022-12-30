@@ -1,8 +1,8 @@
-﻿using FingerTree.Persons;
-using FingerTree.WebFinger;
+using Muddlr.Persons;
+using Muddlr.WebFinger;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FingerTree.Api;
+namespace Muddlr.Api;
 
 internal static class PersonApi
 {
