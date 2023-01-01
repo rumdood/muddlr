@@ -6,7 +6,7 @@ namespace Muddlr.WebFinger;
 public class WebFingerRequest
 {
     [Required]
-    [JsonProperty("resource")]
+    [JsonProperty("resource", Required = Required.DisallowNull)]
     public string Resource { get; set; }
 
     [JsonProperty("rel")] 

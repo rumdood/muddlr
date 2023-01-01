@@ -1,8 +1,8 @@
+using System.Reflection;
 using Serilog;
 using System.Text.Json.Serialization;
 using Muddlr.Api;
 using Muddlr.Persons;
-using Muddlr.WebFinger;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
@@ -25,8 +25,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/", () => Results.Ok("Muddlr 0.1 OK"));
+var apiAssembly = Assembly.GetExecutingAssembly().GetName();
+var apiVersion = apiAssembly.Version is not null
+    ? apiAssembly.Version.ToString()
+    : "UNK";
+
+var coreAssembly = typeof(Person).Assembly.GetName();
+var coreVersion = coreAssembly.Version is not null
+    ? coreAssembly.Version.ToString()
+    : "UNK";
+
+app.MapGet("/", () => Results.Redirect("/health"));
+app.MapGet("/health", () => Results.Ok($"Muddlr API Version: {apiVersion}, Core Version: {coreVersion} OK"));
 app.MapPersonApi();
 app.MapWebFingerApi();
 
 app.Run();
+
+
+public partial class Program { }

@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muddlr.Api", "src\Muddlr.Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muddlr.Core", "src\Muddlr.Core\Muddlr.Core.csproj", "{AF85E8E2-1BD1-4DAA-9BCA-0DB9AA7F2A63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muddlr.Test", "tests\Muddlr.Test\Muddlr.Test.csproj", "{5C9C65FF-AC82-4CCD-8F00-AD473418FFDF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muddler.Api.Tests", "tests\Muddler.Api.Tests\Muddler.Api.Tests.csproj", "{5C9C65FF-AC82-4CCD-8F00-AD473418FFDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

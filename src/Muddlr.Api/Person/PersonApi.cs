@@ -55,7 +55,8 @@ internal record PersonDto(string Name, string Email, string[] Locators, string F
         {
             Name = Name,
             Email = Email,
-            Locators = new HashSet<string>(Locators.Select(loc => !loc.StartsWith("acct:", StringComparison.OrdinalIgnoreCase) ? $"acct:{loc}" : loc)),
+            Locators = new HashSet<string>(Locators.Select(loc =>
+                !loc.StartsWith("acct:", StringComparison.OrdinalIgnoreCase) ? $"acct:{loc}" : loc)),
             FediverseHandle = FediverseHandle,
             FediverseServer = FediverseServer,
             Links = GenerateFediverseLinks(),
@@ -76,21 +77,21 @@ internal record PersonDto(string Name, string Email, string[] Locators, string F
     {
         return new List<WebFingerLink>
         {
-            new WebFingerLink 
-            { 
-                Relationship = "http://webfinger.net/rel/profile-page", 
-                Type = "text/html", 
-                Href = new Uri($"https://{FediverseServer}/@{FediverseHandle}") 
+            new WebFingerLink
+            {
+                Relationship = Relationships.WebFingerProfile,
+                Type = LinkTypes.Text.Html,
+                Href = new Uri($"https://{FediverseServer}/@{FediverseHandle}")
             },
             new WebFingerLink
             {
-                Relationship = "self",
-                Type = "application/activity+json",
+                Relationship = Relationships.Self,
+                Type = LinkTypes.Application.ActivityJson,
                 Href = new Uri($"https://{FediverseServer}/users/{FediverseHandle}")
             },
             new WebFingerLink
             {
-                Relationship = "http://ostatus.org/schema/1.0/subscribe",
+                Relationship = Relationships.OStatusSubscribe,
                 Template = $"https://{FediverseServer}/authorize_interaction?uri={{uri}}"
             },
         };

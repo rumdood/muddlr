@@ -1,6 +1,7 @@
 using Muddlr.Persons;
+using Muddlr.WebFinger;
 
-namespace Muddlr.WebFinger;
+namespace Muddlr.Api;
 
 public class WebFingerRequestHandler
 {
@@ -15,13 +16,14 @@ public class WebFingerRequestHandler
     {
         var user = _personRepository.GetPerson(request.ToPersonFilter());
 
-        return user is { FediverseHandle: var handle, FediverseServer: var server, Aliases: var aliases, Links: var links }
-            ? (WebFingerResult.Success, new WebFingerResponse 
-            { 
-                Subject = $"acct:{handle}@{server}", 
-                Aliases = aliases?.ToArray(), 
-                Links = links?.ToArray() 
-            } )
+        return user is
+            {FediverseHandle: var handle, FediverseServer: var server, Aliases: var aliases, Links: var links}
+            ? (WebFingerResult.Success, new WebFingerResponse
+            {
+                Subject = $"acct:{handle}@{server}",
+                Aliases = aliases?.ToArray(),
+                Links = links?.ToArray()
+            })
             : (WebFingerResult.NotFound, null);
     }
 }

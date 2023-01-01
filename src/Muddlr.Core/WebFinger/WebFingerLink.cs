@@ -5,8 +5,8 @@ namespace Muddlr.WebFinger;
 
 public class WebFingerLink
 {
-    [JsonProperty("rel")]
     [Required]
+    [JsonProperty("rel", Required = Required.DisallowNull)]
     public string Relationship { get; set; }
 
     [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]

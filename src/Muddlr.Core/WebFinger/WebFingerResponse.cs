@@ -6,7 +6,7 @@ namespace Muddlr.WebFinger;
 public class WebFingerResponse
 {
     [Required]
-    [JsonProperty("subject")]
+    [JsonProperty("subject", Required = Required.DisallowNull)]
     public string Subject { get; set; }
     [JsonProperty("aliases", NullValueHandling = NullValueHandling.Ignore)]
     public Uri[]? Aliases { get; set; } = Array.Empty<Uri>();
