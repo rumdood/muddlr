@@ -9,7 +9,7 @@ public interface IPersonRepository
     bool DeletePerson(Person person);
 }
 
-public sealed record AddPersonResult(bool Success, string Message, Person? user = null);
+public sealed record AddPersonResult(bool Success, string Message, Person? AddedPerson = null);
 public sealed record UpdatePersonResult(bool Success, string Message);
 
 public class PersonFilter

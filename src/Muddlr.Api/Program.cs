@@ -2,6 +2,7 @@ using System.Reflection;
 using Serilog;
 using System.Text.Json.Serialization;
 using Muddlr.Api;
+using Muddlr.Api.HealthStatus;
 using Muddlr.Persons;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,11 +12,15 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Host.UseSerilog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IPersonRepository, LiteDbDataSource>();
+//builder.Services.AddSingleton<IPersonRepository, FileSystemDataSource>();
 builder.Services.AddTransient<WebFingerRequestHandler>();
+builder.Services.AddLogging();
 
 var app = builder.Build();
 
@@ -35,12 +40,13 @@ var coreVersion = coreAssembly.Version is not null
     ? coreAssembly.Version.ToString()
     : "UNK";
 
+var muddlrStatus = new MuddlrStatus {ApiVersion = apiVersion, CoreVersion = coreVersion, Status = HealthStatus.Ok};
+
 app.MapGet("/", () => Results.Redirect("/health"));
-app.MapGet("/health", () => Results.Ok($"Muddlr API Version: {apiVersion}, Core Version: {coreVersion} OK"));
+app.MapGet("/health", () => Results.Ok(muddlrStatus));
 app.MapPersonApi();
 app.MapWebFingerApi();
 
 app.Run();
-
 
 public partial class Program { }

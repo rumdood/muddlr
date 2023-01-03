@@ -18,7 +18,7 @@ internal static class WebFingerApi
 
             return status == WebFingerResult.Success
                 ? Results.Ok(response)
-                : Results.NotFound("Cannot find the request resource");
+                : Results.NotFound("Cannot find the requested resource");
         });
 
         return group;

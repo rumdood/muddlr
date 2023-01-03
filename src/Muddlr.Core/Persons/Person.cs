@@ -1,30 +1,32 @@
 using Muddlr.WebFinger;
 using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
 
 namespace Muddlr.Persons;
 
-public class Person
+public interface IPerson
 {
-    [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+    string Name { get; }
+    string Email { get; }
+    HashSet<string> Locators { get; }
+    HashSet<Uri>? Aliases { get; }
+    List<WebFingerLink>? Links { get; }
+    string FediverseServer { get; }
+    string FediverseHandle { get; }
+}
+
+public class Person : IPerson
+{
     public long Id { get; set; }
 
     [Required]
-    [JsonProperty("name", Required = Required.DisallowNull)]
     public string Name { get; set; }
     [Required]
-    [JsonProperty("email", Required = Required.DisallowNull)]
     public string Email { get; set; }
-    [JsonProperty("locators", Required = Required.DisallowNull)]
     public HashSet<string> Locators { get; set; } = new();
-    [JsonProperty("aliases", NullValueHandling = NullValueHandling.Ignore)]
     public HashSet<Uri>? Aliases { get; set; }
-    [JsonProperty("links", NullValueHandling = NullValueHandling.Ignore)]
     public List<WebFingerLink>? Links { get; set; } = new();
     [Required]
-    [JsonProperty("fediverseServer", Required = Required.DisallowNull)]
     public string FediverseServer { get; set; }
     [Required]
-    [JsonProperty("fediversHandle", Required = Required.DisallowNull)]
     public string FediverseHandle { get; set;}
 }
