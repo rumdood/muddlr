@@ -5,6 +5,9 @@ using Muddlr.Api;
 using Muddlr.Persons;
 using Muddlr.WebFinger;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Muddlr.Api.HealthStatus;
 
 namespace Muddlr.Test;
 
@@ -13,6 +16,13 @@ public class PersonApiTests: IDisposable
     private readonly WebApplicationFactory<Program> _app;
     private readonly HttpClient _client;
     private readonly InMemoryPersonRepository _personRepo = new();
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() },
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     public PersonApiTests()
     {
@@ -68,11 +78,13 @@ public class PersonApiTests: IDisposable
             ? coreVersion.ToString()
             : "UNK";
         
-        var expected = $"\"Muddlr API Version: {apiVersionText}, Core Version: {coreVersionText} OK\""; // yes, we'll need more statuses
+        var expected = new MuddlrStatus {ApiVersion = apiVersionText, CoreVersion = coreVersionText, Status = HealthStatus.Ok};
 
-        var response = await _client.GetStringAsync("/health");
+        var response = await _client.GetAsync("/health");
+        var health = await response.Content.ReadFromJsonAsync<MuddlrStatus>(JsonOptions);
 
-        response.Should().Be(expected);
+        health.Should().NotBeNull();
+        health.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
@@ -99,7 +111,7 @@ public class PersonApiTests: IDisposable
     [Fact]
     public async Task AddPersonUpdatesRepositoryWithCorrectFediverseLinks()
     {
-        var person = new PersonDto(
+        var person = new UpsertPersonDto(
             "John Test", 
             "jt@thetest.com", 
             new[] {"tester@thetest.com"}, "jt", "test.social");
@@ -123,7 +135,7 @@ public class PersonApiTests: IDisposable
             }
         };
 
-        var response = await _client.PostAsJsonAsync("/api/person/new", person);
+        var response = await _client.PostAsJsonAsync("/api/person/", person);
         var result = await response.Content.ReadFromJsonAsync<Person>();
 
         result.Should().NotBeNull();

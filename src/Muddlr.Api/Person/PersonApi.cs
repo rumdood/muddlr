@@ -1,6 +1,5 @@
-using Muddlr.Persons;
-using Muddlr.WebFinger;
 using Microsoft.AspNetCore.Mvc;
+using Muddlr.Persons;
 
 namespace Muddlr.Api;
 
@@ -10,33 +9,36 @@ internal static class PersonApi
     {
         var group = routes.MapGroup("/api/person");
         group.WithTags("Person");
-
-        group.MapGet("/{id:long}", ([FromRoute] long id, IPersonRepository personRepo) =>
-        {
-            var person = personRepo.GetPerson(new PersonFilter {Id = id});
-
-            return person is not null ? Results.Ok(person) : Results.NotFound();
-        });
-
+        
         group.MapGet("/", (IPersonRepository personRepo) =>
         {
-            var people = personRepo.GetAllPersons();
-
+            var people = personRepo.GetAllPersons().Select(PersonDto.FromPerson);
             return Results.Ok(people);
         });
         
-        group.MapPost("/new", ([FromBody] PersonDto personDto, IPersonRepository personRepo) =>
+        group.MapPost("/", ([FromBody] UpsertPersonDto personDto, IPersonRepository personRepo) =>
         {
             var addResult = personRepo.AddPerson(personDto.ToPerson());
 
-            return addResult.Success 
-                ? Results.Created($"/api/person/{addResult.user!.Id}", addResult.user) 
+            return addResult is {Success: true, AddedPerson: { Id: var id }}
+                ? Results.Created(
+                    $"/api/person/{IdHasher.Instance.EncodeLong(id)}", 
+                    PersonDto.FromPerson(addResult.AddedPerson)) 
                 : Results.BadRequest(addResult.Message);
         });
-        
-        group.MapPatch("/{id}", ([FromRoute] long id, [FromBody] PersonDto personDto, IPersonRepository personRepo) =>
+
+        group.MapGet("/{id}", ([FromRoute] string id, IPersonRepository personRepo) =>
         {
-            var updateResult = personRepo.UpdatePerson(personDto.ToPerson().WithId(id));
+            var realId = IdHasher.Instance.DecodeSingleLong(id);
+            var person = personRepo.GetPerson(new PersonFilter {Id = realId});
+
+            return person is not null ? Results.Ok(PersonDto.FromPerson(person)) : Results.NotFound();
+        });
+
+        group.MapPut("/{id}", ([FromRoute] string id, [FromBody] UpsertPersonDto personDto, IPersonRepository personRepo) =>
+        {
+            var realId = IdHasher.Instance.DecodeSingleLong(id);
+            var updateResult = personRepo.UpdatePerson(personDto.ToPerson().WithId(realId));
 
             return updateResult.Success 
                 ? Results.Accepted() 
@@ -44,56 +46,5 @@ internal static class PersonApi
         });
 
         return group;
-    }
-}
-
-internal record PersonDto(string Name, string Email, string[] Locators, string FediverseHandle, string FediverseServer)
-{
-    public Person ToPerson()
-    {
-        return new Person
-        {
-            Name = Name,
-            Email = Email,
-            Locators = new HashSet<string>(Locators.Select(loc =>
-                !loc.StartsWith("acct:", StringComparison.OrdinalIgnoreCase) ? $"acct:{loc}" : loc)),
-            FediverseHandle = FediverseHandle,
-            FediverseServer = FediverseServer,
-            Links = GenerateFediverseLinks(),
-            Aliases = GenerateAliases()
-        };
-    }
-
-    private HashSet<Uri> GenerateAliases()
-    {
-        return new HashSet<Uri>
-        {
-            new Uri($"https://{FediverseServer}/@{FediverseHandle}"),
-            new Uri($"https://{FediverseServer}/users/{FediverseHandle}")
-        };
-    }
-
-    private List<WebFingerLink> GenerateFediverseLinks()
-    {
-        return new List<WebFingerLink>
-        {
-            new WebFingerLink
-            {
-                Relationship = Relationships.WebFingerProfile,
-                Type = LinkTypes.Text.Html,
-                Href = new Uri($"https://{FediverseServer}/@{FediverseHandle}")
-            },
-            new WebFingerLink
-            {
-                Relationship = Relationships.Self,
-                Type = LinkTypes.Application.ActivityJson,
-                Href = new Uri($"https://{FediverseServer}/users/{FediverseHandle}")
-            },
-            new WebFingerLink
-            {
-                Relationship = Relationships.OStatusSubscribe,
-                Template = $"https://{FediverseServer}/authorize_interaction?uri={{uri}}"
-            },
-        };
     }
 }
