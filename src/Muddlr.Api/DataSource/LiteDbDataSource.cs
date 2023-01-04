@@ -6,9 +6,16 @@ namespace Muddlr.Api;
 
 internal class LiteDbDataSource: IPersonRepository
 {
-    private static LiteDatabase GetDatabaseContext()
+    private readonly string _connectionString;
+
+    public LiteDbDataSource(string connectionString)
     {
-        return new LiteDatabase("webfinger.db");
+        _connectionString = connectionString;
+    }
+    
+    private LiteDatabase GetDatabaseContext()
+    {
+        return new LiteDatabase(_connectionString);
     }
     
     private static void EnsureIndexes(ILiteCollection<Person> collection)

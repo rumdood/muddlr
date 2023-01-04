@@ -17,10 +17,18 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Host.UseSerilog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IPersonRepository, LiteDbDataSource>();
-//builder.Services.AddSingleton<IPersonRepository, FileSystemDataSource>();
 builder.Services.AddTransient<WebFingerRequestHandler>();
 builder.Services.AddLogging();
+
+var connString = builder.Configuration.GetConnectionString("PersonDb");
+if (string.IsNullOrEmpty(connString))
+{
+    builder.Services.AddSingleton<IPersonRepository, FileSystemDataSource>();
+}
+else
+{
+    builder.Services.AddSingleton<IPersonRepository, LiteDbDataSource>(_ => new LiteDbDataSource(connString));
+}
 
 var app = builder.Build();
 
