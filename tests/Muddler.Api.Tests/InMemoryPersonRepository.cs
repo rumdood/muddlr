@@ -21,7 +21,6 @@ internal class InMemoryPersonRepository : IPersonRepository
                     {
                         Id = kv.Value.Id,
                         Name = kv.Value.Name,
-                        Email = kv.Value.Email,
                         Locators = kv.Value.Locators,
                         Aliases = kv.Value.Aliases,
                         FediverseHandle = kv.Value.FediverseHandle,
@@ -44,7 +43,6 @@ internal class InMemoryPersonRepository : IPersonRepository
         {
             Id = nextId,
             Name = person.Name,
-            Email = person.Email,
             Locators = person.Locators,
             Aliases = person.Aliases,
             FediverseHandle = person.FediverseHandle,

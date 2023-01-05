@@ -3,7 +3,7 @@ using Muddlr.WebFinger;
 
 namespace Muddlr.Api;
 
-internal record UpsertPersonDto(string Name, string Email, string[] Locators, string FediverseHandle, string FediverseServer, string Id = "")
+internal record UpsertPersonDto(string Name, string[] Locators, string FediverseHandle, string FediverseServer, string Id = "")
 {
     public Person ToPerson()
     {
@@ -11,7 +11,6 @@ internal record UpsertPersonDto(string Name, string Email, string[] Locators, st
         {
             Id = string.IsNullOrEmpty(Id) ? default : IdHasher.Instance.DecodeSingleLong(Id),
             Name = Name,
-            Email = Email,
             Locators = new HashSet<string>(Locators.Select(loc =>
                 !loc.StartsWith("acct:", StringComparison.OrdinalIgnoreCase) ? $"acct:{loc}" : loc)),
             FediverseHandle = FediverseHandle,

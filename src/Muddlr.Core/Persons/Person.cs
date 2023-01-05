@@ -6,7 +6,6 @@ namespace Muddlr.Persons;
 public interface IPerson
 {
     string Name { get; }
-    string Email { get; }
     HashSet<string> Locators { get; }
     HashSet<Uri>? Aliases { get; }
     List<WebFingerLink>? Links { get; }
@@ -20,8 +19,6 @@ public class Person : IPerson
 
     [Required]
     public string Name { get; set; }
-    [Required]
-    public string Email { get; set; }
     public HashSet<string> Locators { get; set; } = new();
     public HashSet<Uri>? Aliases { get; set; }
     public List<WebFingerLink>? Links { get; set; } = new();
