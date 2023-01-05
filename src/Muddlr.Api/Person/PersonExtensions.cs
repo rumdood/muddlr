@@ -12,7 +12,6 @@ internal static class PersonExtensions
             {
                 Id = person.Id,
                 Name = person.Name,
-                Email = person.Email,
                 Locators = person.Locators,
                 Aliases = person.Aliases,
                 FediverseHandle = person.FediverseHandle,

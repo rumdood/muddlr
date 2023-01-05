@@ -30,7 +30,6 @@ public class PersonApiTests: IDisposable
             new Person
             {
                 Name = "Matt Test",
-                Email = "mtest@test.com",
                 FediverseHandle = "tester",
                 FediverseServer = "test.social",
                 Locators = new HashSet<string> {"tester@thetest.com"},
@@ -91,7 +90,7 @@ public class PersonApiTests: IDisposable
     public async Task PersonRouteReturnsAllPeople()
     {
         var response = await _client.GetAsync("/api/person");
-        var people = await response.Content.ReadFromJsonAsync<Person[]>();
+        var people = await response.Content.ReadFromJsonAsync<PersonDto[]>();
 
         people.Should().NotBeNull();
         people.Should().NotBeEmpty();
@@ -101,9 +100,9 @@ public class PersonApiTests: IDisposable
     [Fact]
     public async Task GetPersonByIdReturnsCorrectPerson()
     {
-        const long id = 1;
-        var response = await _client.GetAsync($"/api/person/{id}");
-        var matt = await response.Content.ReadFromJsonAsync<Person>();
+        var hashId = IdHasher.Instance.EncodeLong(1);
+        var response = await _client.GetAsync($"/api/person/{hashId}");
+        var matt = await response.Content.ReadFromJsonAsync<PersonDto>();
         matt.Should().NotBeNull();
         matt!.Name.Should().Be("Matt Test");
     }
@@ -112,9 +111,10 @@ public class PersonApiTests: IDisposable
     public async Task AddPersonUpdatesRepositoryWithCorrectFediverseLinks()
     {
         var person = new UpsertPersonDto(
-            "John Test", 
-            "jt@thetest.com", 
-            new[] {"tester@thetest.com"}, "jt", "test.social");
+            "John Test",
+            new[] {"tester@thetest.com"}, 
+            "jt", 
+            "test.social");
         
         var expectedLinks = new List<WebFingerLink>
         {
@@ -136,7 +136,7 @@ public class PersonApiTests: IDisposable
         };
 
         var response = await _client.PostAsJsonAsync("/api/person/", person);
-        var result = await response.Content.ReadFromJsonAsync<Person>();
+        var result = await response.Content.ReadFromJsonAsync<PersonDto>();
 
         result.Should().NotBeNull();
         result!.Links.Should().BeEquivalentTo(expectedLinks);
