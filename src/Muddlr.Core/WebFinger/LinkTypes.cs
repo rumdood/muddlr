@@ -1,19 +1,15 @@
-﻿namespace Muddlr.WebFinger;
+﻿using Ardalis.SmartEnum;
+using System.Text.Json.Serialization;
+using Ardalis.SmartEnum.SystemTextJson;
 
-public static class LinkTypes
+namespace Muddlr.WebFinger;
+
+public class LinkType: SmartEnum<LinkType, string?>
 {
-    public static class Text
-    {
-        private const string LiteralText = "text";
-        
-        public const string Html = $"{LiteralText}/html";
-        public const string Json = $"{LiteralText}/json";
-    }
-
-    public static class Application
-    {
-        private const string LiteralApplication = "application";
-
-        public const string ActivityJson = $"{LiteralApplication}/activity+json";
-    }
+    public static LinkType None = new(name: nameof(None), value: null);
+    public static LinkType TextHtml = new(name: nameof(TextHtml), value: "text/html");
+    public static LinkType ApplicationActivityJson =
+        new(name: nameof(ApplicationActivityJson), value: "application/activity+json");
+    
+    private LinkType(string name, string? value) : base(name, value ?? "") { }
 }

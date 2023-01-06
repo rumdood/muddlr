@@ -35,19 +35,19 @@ internal record UpsertPersonDto(string Name, string[] Locators, string Fediverse
         {
             new WebFingerLink
             {
-                Relationship = Relationships.WebFingerProfile,
-                Type = LinkTypes.Text.Html,
+                Relationship = Relationship.WebFingerProfile,
+                Type = LinkType.TextHtml,
                 Href = new Uri($"https://{FediverseServer}/@{FediverseHandle}")
             },
             new WebFingerLink
             {
-                Relationship = Relationships.Self,
-                Type = LinkTypes.Application.ActivityJson,
+                Relationship = Relationship.Self,
+                Type = LinkType.ApplicationActivityJson,
                 Href = new Uri($"https://{FediverseServer}/users/{FediverseHandle}")
             },
             new WebFingerLink
             {
-                Relationship = Relationships.OStatusSubscribe,
+                Relationship = Relationship.OStatusSubscribe,
                 Template = $"https://{FediverseServer}/authorize_interaction?uri={{uri}}"
             },
         };

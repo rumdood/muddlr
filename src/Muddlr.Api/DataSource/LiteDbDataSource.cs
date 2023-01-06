@@ -1,4 +1,5 @@
 using Muddlr.Persons;
+using Muddlr.WebFinger;
 using Humanizer;
 using LiteDB;
 
@@ -10,13 +11,14 @@ internal class LiteDbDataSource: IPersonRepository
 
     public LiteDbDataSource(string connectionString)
     {
+        BsonMapper.Global.Entity<Relationship>()
+            .Ctor(x => Relationship.FromValue(x["Value"]));
+        BsonMapper.Global.Entity<LinkType>()
+            .Ctor(x => LinkType.FromValue(x["Value"]));
         _connectionString = connectionString;
     }
-    
-    private LiteDatabase GetDatabaseContext()
-    {
-        return new LiteDatabase(_connectionString);
-    }
+
+    private LiteDatabase GetDatabaseContext() => new(_connectionString);
     
     private static void EnsureIndexes(ILiteCollection<Person> collection)
     {
@@ -54,13 +56,14 @@ internal class LiteDbDataSource: IPersonRepository
         try
         { 
             using var db = GetDatabaseContext();
+            
             var personCollection = db.GetCollectionWithPlural<Person>();
-            _ = personCollection.Insert(person);
+            var insertedId = personCollection.Insert(person);
 
             EnsureIndexes(personCollection);
 
             var inserted = personCollection.Query()
-                .Where(x => x.Locators == person.Locators)
+                .Where(x => x.Id == insertedId)
                 .Single();
 
             return new AddPersonResult(true, "Person added", inserted);

@@ -15,7 +15,35 @@ public class PersonApiTests: IDisposable
 {
     private readonly WebApplicationFactory<Program> _app;
     private readonly HttpClient _client;
-    private readonly InMemoryPersonRepository _personRepo = new();
+    private readonly string _tempFileName;
+
+    private readonly Person _matt = new Person()
+    {
+        Name = "Matt Test", 
+        FediverseHandle = "tester", 
+        FediverseServer = "test.social", 
+        Locators = new HashSet<string> {"tester@thetest.com"},
+        Aliases = new HashSet<Uri>
+            {new("https://test.social/@tester"), new("https://test.social/users/tester")},
+        Links = new List<WebFingerLink>
+        {
+            new WebFingerLink
+            {
+                Relationship = Relationship.WebFingerProfile, Type = LinkType.TextHtml,
+                Href = new("https://test.social/@tester")
+            },
+            new WebFingerLink
+            {
+                Relationship = Relationship.Self, Type = LinkType.ApplicationActivityJson,
+                Href = new("https://test.social/users/tester")
+            },
+            new WebFingerLink
+            {
+                Relationship = Relationship.OStatusSubscribe,
+                Template = "https://test.social/authorize_interaction?uri={uri}"
+            }
+        }
+    };
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -26,39 +54,15 @@ public class PersonApiTests: IDisposable
 
     public PersonApiTests()
     {
-        _personRepo.AddPerson(
-            new Person
-            {
-                Name = "Matt Test",
-                FediverseHandle = "tester",
-                FediverseServer = "test.social",
-                Locators = new HashSet<string> {"tester@thetest.com"},
-                Aliases = new HashSet<Uri>
-                    {new("https://test.social/@tester"), new("https://test.social/users/tester")},
-                Links = new List<WebFingerLink>
-                {
-                    new WebFingerLink
-                    {
-                        Relationship = Relationships.WebFingerProfile, Type = LinkTypes.Text.Html,
-                        Href = new("https://test.social/@tester")
-                    },
-                    new WebFingerLink
-                    {
-                        Relationship = Relationships.Self, Type = LinkTypes.Application.ActivityJson,
-                        Href = new("https://test.social/users/tester")
-                    },
-                    new WebFingerLink
-                    {
-                        Relationship = Relationships.OStatusSubscribe,
-                        Template = "https://test.social/authorize_interaction?uri={uri}"
-                    }
-                },
-            });
+        _tempFileName = Path.GetTempFileName();
+        var personRepo = new LiteDbDataSource(_tempFileName);
+        
+        personRepo.AddPerson(_matt);
         _app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder => builder
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<IPersonRepository>(_personRepo);
+                    services.AddSingleton<IPersonRepository>(personRepo);
                 }));
 
         _client = _app.CreateClient();
@@ -105,6 +109,9 @@ public class PersonApiTests: IDisposable
         var matt = await response.Content.ReadFromJsonAsync<PersonDto>();
         matt.Should().NotBeNull();
         matt!.Name.Should().Be("Matt Test");
+        matt!.Links.Should().BeEquivalentTo(_matt.Links);
+        matt!.Locators.Should().BeEquivalentTo(_matt.Locators);
+        matt!.Aliases.Should().BeEquivalentTo(_matt.Aliases);
     }
 
     [Fact]
@@ -120,17 +127,19 @@ public class PersonApiTests: IDisposable
         {
             new WebFingerLink
             {
-                Relationship = Relationships.WebFingerProfile, Type = LinkTypes.Text.Html,
+                Relationship = Relationship.WebFingerProfile, 
+                Type = LinkType.TextHtml,
                 Href = new("https://test.social/@jt")
             },
             new WebFingerLink
             {
-                Relationship = Relationships.Self, Type = LinkTypes.Application.ActivityJson,
+                Relationship = Relationship.Self, 
+                Type = LinkType.ApplicationActivityJson,
                 Href = new("https://test.social/users/jt")
             },
             new WebFingerLink
             {
-                Relationship = Relationships.OStatusSubscribe,
+                Relationship = Relationship.OStatusSubscribe,
                 Template = "https://test.social/authorize_interaction?uri={uri}"
             }
         };
@@ -144,6 +153,11 @@ public class PersonApiTests: IDisposable
 
     public void Dispose()
     {
+        if (File.Exists(_tempFileName))
+        {
+            File.Delete(_tempFileName);
+        }
+        
         _app.Dispose();
         _client.Dispose();
     }
