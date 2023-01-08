@@ -11,10 +11,10 @@ internal static class WebFingerApi
         var group = routes.MapGroup("/.well-known/webfinger/");
         group.WithTags("WebFinger");
 
-        group.MapGet("/", ([FromQuery, BindRequired] string resource, [FromQuery] string[] rel, WebFingerRequestHandler handler) =>
+        group.MapGet("/", async ([FromQuery, BindRequired] string resource, [FromQuery] string[] rel, WebFingerRequestHandler handler) =>
         {
             var request = new WebFingerRequest {Resource = resource, Relationships = rel};
-            var (status, response) = handler.ProcessWebFingerRequest(request);
+            var (status, response) = await handler.ProcessWebFingerRequest(request);
 
             return status == WebFingerResult.Success
                 ? Results.Ok(response)

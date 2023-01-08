@@ -1,0 +1,23 @@
+{
+  "subject": "acct:rumdood@mas.to",
+  "aliases": [
+    "https://mas.to/@rumdood",
+    "https://mas.to/users/rumdood"
+  ],
+  "links": [
+    {
+      "relationship": "http://webfinger.net/rel/profile-page",
+      "type": "text/html",
+      "href": "https://mas.to/@rumdood"
+    },
+    {
+      "relationship": "self",
+      "type": "application/activity\u002Bjson",
+      "href": "https://mas.to/users/rumdood"
+    },
+    {
+      "relationship": "http://ostatus.org/schema/1.0/subscribe",
+      "template": "https://mas.to/authorize_interaction?uri={uri}"
+    }
+  ]
+}

@@ -25,7 +25,7 @@
 x64/*
 x86/*
 bld/*
-foo/*
+.data/*
 !*/.gitkeep
 [Bb]in/*
 [Oo]bj/*

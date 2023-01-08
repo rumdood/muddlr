@@ -20,6 +20,7 @@
       <Content Include="..\..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+      <Content Include=".data\.gitkeep" />
     </ItemGroup>
 
     <ItemGroup>
@@ -48,10 +49,6 @@
     
     <ItemGroup>
         <InternalsVisibleTo Include="Muddler.Api.Tests" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="People" />
     </ItemGroup>
 
 </Project>

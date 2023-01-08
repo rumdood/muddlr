@@ -17,6 +17,13 @@
         <PackageReference Include="Ardalis.SmartEnum.SystemTextJson" Version="2.1.0" />
         <PackageReference Include="Ardalis.SmartEnum.Utf8Json" Version="2.1.0" />
         <PackageReference Include="Humanizer" Version="2.14.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\7.0.1\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
