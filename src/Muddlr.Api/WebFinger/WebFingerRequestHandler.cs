@@ -1,26 +1,26 @@
-using Muddlr.Persons;
+using Muddlr.Users;
 using Muddlr.WebFinger;
 
 namespace Muddlr.Api;
 
 public class WebFingerRequestHandler
 {
-    private readonly IPersonRepository _personRepository;
+    private readonly IUserRepository _userRepository;
 
-    public WebFingerRequestHandler(IPersonRepository personRepository)
+    public WebFingerRequestHandler(IUserRepository userRepository)
     {
-        _personRepository = personRepository;
+        _userRepository = userRepository;
     }
 
     public (WebFingerResult Status, WebFingerResponse? Response) ProcessWebFingerRequest(WebFingerRequest request)
     {
-        var user = _personRepository.GetPerson(request.ToPersonFilter());
+        var user = _userRepository.GetUser(request.ToPersonFilter());
 
         return user is
-            {FediverseHandle: var handle, FediverseServer: var server, Aliases: var aliases, Links: var links}
+            { FediverseAccount: var fedAccount, Aliases: var aliases, Links: var links}
             ? (WebFingerResult.Success, new WebFingerResponse
             {
-                Subject = $"acct:{handle}@{server}",
+                Subject = $"acct:{fedAccount.Username}@{fedAccount.Username}",
                 Aliases = aliases?.ToArray(),
                 Links = links?.ToArray()
             })
@@ -30,9 +30,9 @@ public class WebFingerRequestHandler
 
 internal static class WebFingerRequestExtensions
 {
-    public static PersonFilter ToPersonFilter(this WebFingerRequest request)
+    public static UserFilter ToPersonFilter(this WebFingerRequest request)
     {
-        return new PersonFilter
+        return new UserFilter
         {
             Locator = request.Resource,
             Relationships = request.Relationships,

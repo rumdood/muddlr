@@ -1,20 +1,26 @@
-﻿using Muddlr.Persons;
+﻿using Muddlr.Fediverse;
+using Muddlr.Users;
 using Muddlr.WebFinger;
 
 namespace Muddlr.Api;
 
-internal record UpsertPersonDto(string Name, string[] Locators, string FediverseHandle, string FediverseServer, string Id = "")
+internal record UpsertUserDto(string Name, string[] Locators, string FediverseUsername, string FediverseServer, string Id = "")
 {
-    public Person ToPerson()
+    public User ToUser()
     {
-        return new Person
+        if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(FediverseUsername) ||
+            string.IsNullOrWhiteSpace(FediverseServer))
+        {
+            throw new InvalidOperationException("Mandatory fields not included");
+        }
+        
+        return new User
         {
             Id = string.IsNullOrEmpty(Id) ? default : IdHasher.Instance.DecodeSingleLong(Id),
             Name = Name,
             Locators = new HashSet<string>(Locators.Select(loc =>
                 !loc.StartsWith("acct:", StringComparison.OrdinalIgnoreCase) ? $"acct:{loc}" : loc)),
-            FediverseHandle = FediverseHandle,
-            FediverseServer = FediverseServer,
+            FediverseAccount = new FediverseAccount() { Server = FediverseServer, Username = FediverseUsername },
             Links = GenerateFediverseLinks(),
             Aliases = GenerateAliases()
         };
@@ -24,8 +30,8 @@ internal record UpsertPersonDto(string Name, string[] Locators, string Fediverse
     {
         return new HashSet<Uri>
         {
-            new Uri($"https://{FediverseServer}/@{FediverseHandle}"),
-            new Uri($"https://{FediverseServer}/users/{FediverseHandle}")
+            new Uri($"https://{FediverseServer}/@{FediverseUsername}"),
+            new Uri($"https://{FediverseServer}/users/{FediverseUsername}")
         };
     }
 
@@ -37,13 +43,13 @@ internal record UpsertPersonDto(string Name, string[] Locators, string Fediverse
             {
                 Relationship = Relationship.WebFingerProfile,
                 Type = LinkType.TextHtml,
-                Href = new Uri($"https://{FediverseServer}/@{FediverseHandle}")
+                Href = new Uri($"https://{FediverseServer}/@{FediverseUsername}")
             },
             new WebFingerLink
             {
                 Relationship = Relationship.Self,
                 Type = LinkType.ApplicationActivityJson,
-                Href = new Uri($"https://{FediverseServer}/users/{FediverseHandle}")
+                Href = new Uri($"https://{FediverseServer}/users/{FediverseUsername}")
             },
             new WebFingerLink
             {

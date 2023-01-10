@@ -11,9 +11,6 @@
 *.userosscache
 *.sln.docstates
 
-# LiteDb Files
-*.db
-
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -25,7 +22,7 @@
 x64/*
 x86/*
 bld/*
-foo/*
+.data/
 !*/.gitkeep
 [Bb]in/*
 [Oo]bj/*

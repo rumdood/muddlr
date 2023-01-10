@@ -1,29 +1,23 @@
 using Muddlr.WebFinger;
-using System.ComponentModel.DataAnnotations;
+using Muddlr.Fediverse;
 
-namespace Muddlr.Persons;
+namespace Muddlr.Users;
 
-public interface IPerson
+public interface IUser
 {
     string Name { get; }
     HashSet<string> Locators { get; }
     HashSet<Uri>? Aliases { get; }
     List<WebFingerLink>? Links { get; }
-    string FediverseServer { get; }
-    string FediverseHandle { get; }
+    FediverseAccount FediverseAccount { get; }
 }
 
-public class Person : IPerson
+public class User : IUser
 {
     public long Id { get; set; }
-
-    [Required]
     public string Name { get; set; }
     public HashSet<string> Locators { get; set; } = new();
     public HashSet<Uri>? Aliases { get; set; }
     public List<WebFingerLink>? Links { get; set; } = new();
-    [Required]
-    public string FediverseServer { get; set; }
-    [Required]
-    public string FediverseHandle { get; set;}
+    public FediverseAccount FediverseAccount { get; set; }
 }
