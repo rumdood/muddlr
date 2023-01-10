@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Muddlr.Api;
-using Muddlr.Persons;
+using Muddlr.Users;
 using Muddlr.WebFinger;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -11,17 +11,16 @@ using Muddlr.Api.HealthStatus;
 
 namespace Muddlr.Test;
 
-public class PersonApiTests: IDisposable
+public class UserApiTests: IDisposable
 {
     private readonly WebApplicationFactory<Program> _app;
     private readonly HttpClient _client;
     private readonly string _tempFileName;
 
-    private readonly Person _matt = new Person()
+    private readonly User _matt = new User()
     {
         Name = "Matt Test", 
-        FediverseHandle = "tester", 
-        FediverseServer = "test.social", 
+        FediverseAccount = new() { Server = "test.social", Username = "tester" },
         Locators = new HashSet<string> {"tester@thetest.com"},
         Aliases = new HashSet<Uri>
             {new("https://test.social/@tester"), new("https://test.social/users/tester")},
@@ -52,17 +51,17 @@ public class PersonApiTests: IDisposable
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public PersonApiTests()
+    public UserApiTests()
     {
         _tempFileName = Path.GetTempFileName();
-        var personRepo = new LiteDbDataSource(_tempFileName);
+        var userRepo = new LiteDbDataSource(_tempFileName);
         
-        personRepo.AddPerson(_matt);
+        userRepo.AddUser(_matt);
         _app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder => builder
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<IPersonRepository>(personRepo);
+                    services.AddSingleton<IUserRepository>(userRepo);
                 }));
 
         _client = _app.CreateClient();
@@ -76,7 +75,7 @@ public class PersonApiTests: IDisposable
             ? apiVersion.ToString()
             : "UNK";
         
-        var coreVersion = typeof(Person).Assembly.GetName().Version;
+        var coreVersion = typeof(User).Assembly.GetName().Version;
         var coreVersionText = coreVersion is not null
             ? coreVersion.ToString()
             : "UNK";
@@ -91,10 +90,10 @@ public class PersonApiTests: IDisposable
     }
 
     [Fact]
-    public async Task PersonRouteReturnsAllPeople()
+    public async Task UserRouteReturnsAllPeople()
     {
-        var response = await _client.GetAsync("/api/person");
-        var people = await response.Content.ReadFromJsonAsync<PersonDto[]>();
+        var response = await _client.GetAsync("/api/user");
+        var people = await response.Content.ReadFromJsonAsync<UserDto[]>();
 
         people.Should().NotBeNull();
         people.Should().NotBeEmpty();
@@ -102,11 +101,11 @@ public class PersonApiTests: IDisposable
     }
 
     [Fact]
-    public async Task GetPersonByIdReturnsCorrectPerson()
+    public async Task GetUserByIdReturnsCorrectUser()
     {
         var hashId = IdHasher.Instance.EncodeLong(1);
-        var response = await _client.GetAsync($"/api/person/{hashId}");
-        var matt = await response.Content.ReadFromJsonAsync<PersonDto>();
+        var response = await _client.GetAsync($"/api/user/{hashId}");
+        var matt = await response.Content.ReadFromJsonAsync<UserDto>();
         matt.Should().NotBeNull();
         matt!.Name.Should().Be("Matt Test");
         matt!.Links.Should().BeEquivalentTo(_matt.Links);
@@ -115,9 +114,9 @@ public class PersonApiTests: IDisposable
     }
 
     [Fact]
-    public async Task AddPersonUpdatesRepositoryWithCorrectFediverseLinks()
+    public async Task AddUserUpdatesRepositoryWithCorrectFediverseLinks()
     {
-        var person = new UpsertPersonDto(
+        var user = new UpsertUserDto(
             "John Test",
             new[] {"tester@thetest.com"}, 
             "jt", 
@@ -144,8 +143,8 @@ public class PersonApiTests: IDisposable
             }
         };
 
-        var response = await _client.PostAsJsonAsync("/api/person/", person);
-        var result = await response.Content.ReadFromJsonAsync<PersonDto>();
+        var response = await _client.PostAsJsonAsync("/api/user/", user);
+        var result = await response.Content.ReadFromJsonAsync<UserDto>();
 
         result.Should().NotBeNull();
         result!.Links.Should().BeEquivalentTo(expectedLinks);

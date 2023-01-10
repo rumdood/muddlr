@@ -1,11 +1,11 @@
-using Muddlr.Persons;
+using Muddlr.Users;
 using Muddlr.WebFinger;
 using Humanizer;
 using LiteDB;
 
 namespace Muddlr.Api;
 
-internal class LiteDbDataSource: IPersonRepository
+internal class LiteDbDataSource: IUserRepository
 {
     private readonly string _connectionString;
 
@@ -20,85 +20,85 @@ internal class LiteDbDataSource: IPersonRepository
 
     private LiteDatabase GetDatabaseContext() => new(_connectionString);
     
-    private static void EnsureIndexes(ILiteCollection<Person> collection)
+    private static void EnsureIndexes(ILiteCollection<User> collection)
     {
         collection.EnsureIndex(u => u.Id);
         collection.EnsureIndex(u => u.Locators);
         collection.EnsureIndex("AliasesByRel", "LOWER($.Aliases[*].Relationship)");
     }
 
-    public List<Person> GetAllPersons()
+    public IEnumerable<User> GetAllUsers()
     {
         using var db = GetDatabaseContext();
-        var personCollection = db.GetCollectionWithPlural<Person>();
-        return personCollection.Query().ToList();
+        var userCollection = db.GetCollectionWithPlural<User>();
+        return userCollection.Query().ToList();
     }
 
-    public Person? GetPerson(PersonFilter filter)
+    public User? GetUser(UserFilter filter)
     {
         using var db = GetDatabaseContext();
-        var personCollection = db.GetCollectionWithPlural<Person>();
-        var person = string.IsNullOrEmpty(filter.Locator)
-            ? personCollection.Query()
+        var userCollection = db.GetCollectionWithPlural<User>();
+        var user = string.IsNullOrEmpty(filter.Locator)
+            ? userCollection.Query()
                 .Where(x => x.Id == filter.Id)
                 .SingleOrDefault()
-            : personCollection.Query()
+            : userCollection.Query()
                 .Where(x => x.Locators.Contains(filter.Locator))
                 .SingleOrDefault();
 
-        return person is not null && filter.Relationships.Any() 
-            ? person.WithFilteredLinks(filter.Relationships)
-            : person;
+        return user is not null && filter.Relationships.Any() 
+            ? user.WithFilteredLinks(filter.Relationships)
+            : user;
     }
 
-    public AddPersonResult AddPerson(Person person)
+    public AddUserResult AddUser(User user)
     {
         try
         { 
             using var db = GetDatabaseContext();
             
-            var personCollection = db.GetCollectionWithPlural<Person>();
-            var insertedId = personCollection.Insert(person);
+            var userCollection = db.GetCollectionWithPlural<User>();
+            var insertedId = userCollection.Insert(user);
 
-            EnsureIndexes(personCollection);
+            EnsureIndexes(userCollection);
 
-            var inserted = personCollection.Query()
+            var inserted = userCollection.Query()
                 .Where(x => x.Id == insertedId)
                 .Single();
 
-            return new AddPersonResult(true, "Person added", inserted);
+            return new AddUserResult(true, "User added", inserted);
         }
         catch (Exception ex)
         {
-            return new AddPersonResult(false, ex.Message);
+            return new AddUserResult(false, ex.Message);
         }
     }
 
-    public UpdatePersonResult UpdatePerson(Person person)
+    public UpdateUserResult UpdateUser(User user)
     {
         try
         {
             using var db = GetDatabaseContext();
-            var persons = db.GetCollectionWithPlural<Person>();
-            var success = persons.Update(person);
+            var users = db.GetCollectionWithPlural<User>();
+            var success = users.Update(user);
 
-            EnsureIndexes(persons);
+            EnsureIndexes(users);
 
-            return new UpdatePersonResult(success, success ? "Person updated" : "Person update failed");
+            return new UpdateUserResult(success, success ? "User updated" : "User update failed");
         }
         catch (Exception ex)
         {
-            return new UpdatePersonResult(false, ex.Message);
+            return new UpdateUserResult(false, ex.Message);
         }
     }
 
-    public bool DeletePerson(Person person)
+    public bool DeleteUser(User user)
     {
         try
         {
             using var db = GetDatabaseContext();
-            var personCollection = db.GetCollectionWithPlural<Person>();
-            return personCollection.Delete(person.Id);
+            var userCollection = db.GetCollectionWithPlural<User>();
+            return userCollection.Delete(user.Id);
         }
         catch (Exception)
         {
