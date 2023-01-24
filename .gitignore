@@ -18,7 +18,7 @@
 *.userprefs
 
 # data files
-.data/*
+**/.data/*
 
 # keep gitkeeps
 !*/.gitkeep
