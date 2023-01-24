@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Muddlr.WebFinger;
 
 namespace Muddlr.Api;
@@ -11,7 +11,7 @@ internal static class WebFingerManagementApi
         var group = routes.MapGroup("/api/webfinger");
         group.WithTags("WebFingerMgmt");
 
-        group.MapPost("/", async ([FromBody] WebFingerUpdateRequest updateRequest, IWebFingerService webFingerService) =>
+        group.MapPost("/", [Authorize] async ([FromBody] WebFingerUpdateRequest updateRequest, IWebFingerService webFingerService) =>
         {
             var addResult = await webFingerService.AddWebFingerRecord(updateRequest);
 

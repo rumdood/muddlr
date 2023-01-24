@@ -1,7 +1,11 @@
 using System.Reflection;
+using System.Security.Claims;
 using Serilog;
 using System.Text.Json.Serialization;
+using idunno.Authentication.Basic;
+using Microsoft.AspNetCore.Authorization;
 using Muddlr.Api;
+using Muddlr.Api.Auth;
 using Muddlr.Api.HealthStatus;
 using Muddlr.WebFinger;
 
@@ -14,12 +18,50 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Host.UseSerilog();
+builder.Host.UseSerilog((context, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
+        .Enrich.FromLogContext();
+    loggerConfiguration.WriteTo.Console();
+    loggerConfiguration.MinimumLevel.Verbose();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IWebFingerService, WebFingerService>();
 builder.Services.AddTransient<WebFingerRequestHandler>();
 builder.Services.AddLogging();
+builder.Services.AddOutputCache(option =>
+{
+    option.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(5);
+});
+builder.Services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+    .AddBasic(options =>
+    {
+        options.Realm = "Basic Authentication";
+        options.Events = new BasicAuthenticationEvents
+        {
+            OnValidateCredentials = context =>
+            {
+                if (context.Username == builder.Configuration.GetValue<string>(AuthConstants.Username) &&
+                    context.Password == builder.Configuration.GetValue<string>(AuthConstants.Password))
+                {
+                    var claims = new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, context.Username, ClaimValueTypes.String,
+                            context.Options.ClaimsIssuer),
+                        new Claim(ClaimTypes.Name, context.Username, ClaimValueTypes.String,
+                            context.Options.ClaimsIssuer)
+                    };
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                    context.Success();
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -28,6 +70,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
 
 var apiAssembly = Assembly.GetExecutingAssembly().GetName();
 var apiVersion = apiAssembly.Version is not null
@@ -40,6 +84,9 @@ var coreVersion = coreAssembly.Version is not null
     : "UNK";
 
 var muddlrStatus = new MuddlrStatus {ApiVersion = apiVersion, CoreVersion = coreVersion, Status = HealthStatus.Ok};
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/health"));
 app.MapGet("/health", () => Results.Ok(muddlrStatus));

@@ -57,19 +57,6 @@ public class WebFingerService : IWebFingerService
         {
             File.Move(file, Path.Combine(_faultedFolder, Path.GetFileName(file)));
         }
-
-        /*
-        foreach (var file in faulted.Select(x => new FileInfo(x)).OrderByDescending(f => f.LinkTarget ?? ""))
-        {
-            if (!string.IsNullOrEmpty(file.LinkTarget))
-            {
-                file.Delete();
-                continue;
-            }
-            
-            file.MoveTo(Path.Combine(_faultedFolder, file.Name));
-        }
-        */
     }
 
     private List<FediverseAccountWithLocators> GetAccountsAndLocators()
@@ -118,10 +105,6 @@ public class WebFingerService : IWebFingerService
 
         foreach (var locator in locators)
         {
-            /*
-            var locatorFileName = GetFileNameForLocator(locator);
-            File.CreateSymbolicLink(Path.Combine(_folder, locatorFileName), filePath);
-            */
             var corrected = locator.StartsWith("acct:") ? locator : $"acct:{locator}";
             acct.Locators.Add(corrected);
             _webFingerByLocator[corrected] = record;
@@ -166,8 +149,6 @@ public class WebFingerService : IWebFingerService
     }
 
     private static string GetFileNameForAccount(FediverseAccount account) => $"{account.Key}.json";
-
-    // private static string GetFileNameForLocator(string locator) => $"LOC_{locator}.json";
 
     private bool FileExistsForRecord(FediverseAccount account) => FileExists(GetFileNameForAccount(account));
 
@@ -335,24 +316,6 @@ public class WebFingerService : IWebFingerService
         }
 
         return true;
-
-        /*
-        var fileName = Path.Combine(_folder, GetFileNameForAccount(account));
-
-        if (!File.Exists(fileName))
-        {
-            throw new FileNotFoundException($"Could not locate file for account {fileName}");
-        }
-
-        var locatorFileName = Path.Combine(_folder, GetFileNameForLocator(locator));
-        if (File.Exists(locatorFileName))
-        {
-            return false;
-        }
-        
-        File.CreateSymbolicLink(locatorFileName, fileName);
-        return true;
-        */
     }
 
     public async Task<bool> RemoveLocator(string locator, FediverseAccount account)
@@ -371,44 +334,11 @@ public class WebFingerService : IWebFingerService
         await SaveLocators();
 
         return _webFingerByLocator.Remove(locator);
-        /*
-        var fileName = Path.Combine(_folder, GetFileNameForAccount(account));
-
-        if (!File.Exists(fileName))
-        {
-            throw new FileNotFoundException($"Could not locate file for account {fileName}");
-        }
-
-        var locatorFileName = Path.Combine(_folder, GetFileNameForLocator(locator));
-        if (!File.Exists(locatorFileName))
-        {
-            return false;
-        }
-        
-        File.Delete(locatorFileName);
-        return true;
-        */
     }
 
     public async Task<bool> DeleteWebFingerRecord(FediverseAccount account)
     {
         var fileName = Path.Combine(_folder, GetFileNameForAccount(account));
-        /*
-        var locators = Directory.EnumerateFiles(_folder, "LOC_*.json", SearchOption.TopDirectoryOnly)
-            .Where(file => File.ResolveLinkTarget(file, false) is {FullName: var fullName} &&
-                           fullName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        foreach (var locator in locators)
-        {
-            if (!File.Exists(locator))
-            {
-                continue;
-            }
-
-            File.Delete(locator);
-        }
-        */
 
         if (!File.Exists(fileName))
         {
