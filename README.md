@@ -24,6 +24,10 @@ Right now the data is all stored as just static JSON files since the data is ver
 
 The initial build used LiteDb for storage as a way to iterate quickly on the data model, but I kept contemplating supporting other databases (especially for eventually adding link-tree building for individual users, which would require user accounts stored somewhere) and decided to defer any database decisions.
 
+### Auth
+
+Yes, as the moment the administrative API just uses basic auth, thanks to Barry Dorrans' idunno.Authentication library. I'm sure that if he knew this project existed he would be appropriately unhappy that yet another site is using basic auth. This is really temporary as I fell into a rabbit hole of different auth options and decided to defer a decision until I knew how I wanted to do actual use management down the road. For now really any administrator with an API key can update any webfinger account. At the very least that should probably be changed so that the keys have scopes to change specific accounts, but I only have so much time to build useless things that nobody but me will use and my chatbots are getting jealous.
+
 ### Looking forward
 
 There's really no pressing reason for the API to be an ASP.NET site. This particular project kind of lends itself to a static-site + serverless backend approach, so I've had my eye on migrating the API endtpoints to something like Azure Functions and then putting a static site in front of it for serving the webfinger results and eventually the link-trees.

@@ -3,7 +3,6 @@ using System.Security.Claims;
 using Serilog;
 using System.Text.Json.Serialization;
 using idunno.Authentication.Basic;
-using Microsoft.AspNetCore.Authorization;
 using Muddlr.Api;
 using Muddlr.Api.Auth;
 using Muddlr.Api.HealthStatus;
