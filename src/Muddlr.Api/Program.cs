@@ -9,6 +9,11 @@ using Muddlr.Api.Auth;
 using Muddlr.Api.HealthStatus;
 using Muddlr.WebFinger;
 
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
@@ -20,11 +25,7 @@ builder.Configuration.AddEnvironmentVariables();
 
 builder.Host.UseSerilog((context, loggerConfiguration) =>
 {
-    loggerConfiguration
-        .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
-        .Enrich.FromLogContext();
-    loggerConfiguration.WriteTo.Console();
-    loggerConfiguration.MinimumLevel.Verbose();
+    loggerConfiguration.ReadFrom.Configuration(builder.Configuration);
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -71,7 +72,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+var useHttps = builder.Configuration.GetValue<bool>("muddlr:forceHttps");
+
+if (app.Environment.IsProduction())
+{
+    app.UseExceptionHandler("/Error");
+
+    if (useHttps)
+    {
+        app.UseHsts();
+    }
+}
+
+if (useHttps)
+{
+    app.UseHttpsRedirection();
+}
 
 var apiAssembly = Assembly.GetExecutingAssembly().GetName();
 var apiVersion = apiAssembly.Version is not null
