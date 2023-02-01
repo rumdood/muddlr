@@ -53,7 +53,7 @@ internal static class WebFingerManagementApi
                     ? await webFingerService.AddWebFingerRecord(updateRequest)
                     : await webFingerService.UpdateWebFingerRecord(updateRequest);
 
-                return result is not null
+                return result is { Subject: { } }
                     ? isExisting
                         ? Results.Accepted($"{resourceUrl}{result.Subject}", result!)
                         : Results.Created($"{resourceUrl}{result.Subject}", result!)

@@ -364,16 +364,77 @@ public class WebFingerService : IWebFingerService
 
     public async Task<WebFingerRecord> AddLinks(FediverseAccount account, IEnumerable<WebFingerLink> links)
     {
-        throw new NotImplementedException();
+        if (!TryGetRecordForAccount(account, out var record) || record is not { })
+        {
+            throw new KeyNotFoundException("No record found for account");
+        }
+
+        record.Links ??= new();
+
+        var existing = record.Links.ToDictionary(link => link.Relationship.Name);
+        record.Links.AddRange(links.Where(link => !existing.ContainsKey(link.Relationship.Name)));
+
+        var locators = _accountsWithLocators[account.Key].Locators;
+
+        await SaveWebFingerRecord(account, locators, record);
+
+        return record;
     }
 
     public async Task<WebFingerRecord> RemoveLinks(FediverseAccount account, IEnumerable<WebFingerLink> links)
     {
-        throw new NotImplementedException();
+        if (!TryGetRecordForAccount(account, out var record) || record is not { })
+        {
+            throw new KeyNotFoundException("No record found for account");
+        }
+
+        if (record.Links is not { Count: > 0 })
+        {
+            return record;
+        }
+
+        var existing = record.Links.ToDictionary(link => link.Relationship.Name);
+
+        foreach (var link in links)
+        {
+            if (!existing.TryGetValue(link.Relationship.Name, out var foundLink) || foundLink.Href != link.Href)
+            {
+                continue;
+            }
+
+            record.Links.Remove(link);
+        }
+
+        var locators = _accountsWithLocators[account.Key].Locators;
+
+        await SaveWebFingerRecord(account, locators, record);
+
+        return record;
     }
 
-    public async Task<WebFingerRecord?> GetWebFingerRecord(string locator)
+    public async Task<WebFingerRecord?> GetWebFingerRecord(string locator, params string[] relationships)
     {
-        return TryGetRecordForLocator(locator, out var record) ? record : null;
+        if (TryGetRecordForLocator(locator, out var record))
+        {
+            return relationships.Length > 0
+                ? record!.WithFilteredLinks(relationships)
+                : record!;
+        }
+
+        return null;
+    }
+}
+
+public static class WebFingerRecordExtensions
+{
+    public static WebFingerRecord WithFilteredLinks(this WebFingerRecord record, string[] relationships)
+    {
+        return new WebFingerRecord
+        {
+            Subject = record.Subject,
+            Aliases = record.Aliases,
+            Properties = record.Properties,
+            Links = record.Links?.Where(link => relationships.Contains(link.Relationship.Value)).ToList()
+        };
     }
 }

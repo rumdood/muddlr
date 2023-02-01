@@ -43,6 +43,7 @@ builder.Services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationSch
         {
             OnValidateCredentials = context =>
             {
+                var pwd = builder.Configuration.GetValue<string>(AuthConstants.Password);
                 if (context.Username == builder.Configuration.GetValue<string>(AuthConstants.Username) &&
                     context.Password == builder.Configuration.GetValue<string>(AuthConstants.Password))
                 {
@@ -63,6 +64,15 @@ builder.Services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationSch
     });
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "Everybody",
+        policy =>
+        {
+            policy.AllowAnyOrigin();
+        });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -82,6 +92,8 @@ if (app.Environment.IsProduction())
         app.UseHsts();
     }
 }
+
+app.UseCors();
 
 if (useHttps)
 {

@@ -9,7 +9,7 @@ public interface IWebFingerService
     Task<bool> DeleteWebFingerRecord(FediverseAccount account);
     Task<WebFingerRecord> AddLinks(FediverseAccount account, IEnumerable<WebFingerLink> links);
     Task<WebFingerRecord> RemoveLinks(FediverseAccount account, IEnumerable<WebFingerLink> links);
-    Task<WebFingerRecord?> GetWebFingerRecord(string locator);
+    Task<WebFingerRecord?> GetWebFingerRecord(string locator, params string[] relationships);
 }
 
 public class WebFingerUpdateRequest

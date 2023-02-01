@@ -13,7 +13,7 @@ public class WebFingerRequestHandler
 
     public async Task<(WebFingerResult Status, WebFingerRecord? Response)> ProcessWebFingerRequest(WebFingerRequest request)
     {
-        var webFinger = await _webFingerService.GetWebFingerRecord(request.Resource);
+        var webFinger = await _webFingerService.GetWebFingerRecord(request.Resource, request.Relationships);
         var status = webFinger is not null ? WebFingerResult.Success : WebFingerResult.NotFound;
 
         return (status, webFinger);
