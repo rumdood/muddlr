@@ -1,41 +1,21 @@
-using Muddlr.Users;
 using Muddlr.WebFinger;
 
 namespace Muddlr.Api;
 
 public class WebFingerRequestHandler
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IWebFingerService _webFingerService;
 
-    public WebFingerRequestHandler(IUserRepository userRepository)
+    public WebFingerRequestHandler(IWebFingerService webFingerService)
     {
-        _userRepository = userRepository;
+        _webFingerService = webFingerService;
     }
 
-    public (WebFingerResult Status, WebFingerResponse? Response) ProcessWebFingerRequest(WebFingerRequest request)
+    public async Task<(WebFingerResult Status, WebFingerRecord? Response)> ProcessWebFingerRequest(WebFingerRequest request)
     {
-        var user = _userRepository.GetUser(request.ToPersonFilter());
+        var webFinger = await _webFingerService.GetWebFingerRecord(request.Resource, request.Relationships);
+        var status = webFinger is not null ? WebFingerResult.Success : WebFingerResult.NotFound;
 
-        return user is
-            { FediverseAccount: var fedAccount, Aliases: var aliases, Links: var links}
-            ? (WebFingerResult.Success, new WebFingerResponse
-            {
-                Subject = $"acct:{fedAccount.Username}@{fedAccount.Username}",
-                Aliases = aliases?.ToArray(),
-                Links = links?.ToArray()
-            })
-            : (WebFingerResult.NotFound, null);
-    }
-}
-
-internal static class WebFingerRequestExtensions
-{
-    public static UserFilter ToPersonFilter(this WebFingerRequest request)
-    {
-        return new UserFilter
-        {
-            Locator = request.Resource,
-            Relationships = request.Relationships,
-        };
+        return (status, webFinger);
     }
 }
