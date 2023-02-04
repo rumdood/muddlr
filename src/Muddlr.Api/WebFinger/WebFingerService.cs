@@ -17,9 +17,9 @@ public class WebFingerService : IWebFingerService
     private readonly string _faultedFolder;
     
     // index of webfinger records by filename
-    private readonly Dictionary<string, WebFingerRecord> _webFingerCacheByAccount = new();
-    private readonly Dictionary<string, WebFingerRecord> _webFingerByLocator = new();
-    private readonly Dictionary<string, FediverseAccountWithLocators> _accountsWithLocators = new();
+    private readonly Dictionary<string, WebFingerRecord> _webFingerCacheByAccount = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, WebFingerRecord> _webFingerByLocator = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, FediverseAccountWithLocators> _accountsWithLocators;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -243,7 +243,8 @@ public class WebFingerService : IWebFingerService
         
         _folder = Path.Combine(env.ContentRootPath, DataRoot, WebFingerFolder);
         _faultedFolder = Path.Combine(_folder, FaultFolder);
-        _accountsWithLocators = GetAccountsAndLocators().ToDictionary(kv => kv.Account.Key);
+        _accountsWithLocators = GetAccountsAndLocators()
+            .ToDictionary(kv => kv.Account.Key, kv => kv, StringComparer.OrdinalIgnoreCase);
         LoadWebFingerRecordsCache();
         LoadLocatorsCache();
     }
