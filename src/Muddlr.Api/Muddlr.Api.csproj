@@ -49,5 +49,9 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Muddler.Api.Tests" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="wwwroot" />
+    </ItemGroup>
 
 </Project>

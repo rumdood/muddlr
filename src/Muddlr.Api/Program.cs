@@ -21,6 +21,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 });
 
 builder.Configuration.AddEnvironmentVariables();
+builder.Services.Configure<MuddlrApiConfig>(builder.Configuration.GetSection("muddlr"));
+var muddlrConfig = new MuddlrApiConfig();
+builder.Configuration.GetSection("muddlr").Bind(muddlrConfig);
+builder.Services.AddSingleton(muddlrConfig);
 
 builder.Host.UseSerilog((context, loggerConfiguration) =>
 {
@@ -63,7 +67,6 @@ builder.Services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationSch
         };
     });
 builder.Services.AddAuthorization();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "Everybody",
@@ -73,6 +76,8 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddRazorPages();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -81,13 +86,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-var useHttps = builder.Configuration.GetValue<bool>("muddlr:forceHttps");
-
 if (app.Environment.IsProduction())
 {
     app.UseExceptionHandler("/Error");
 
-    if (useHttps)
+    if (muddlrConfig.ForceHttps)
     {
         app.UseHsts();
     }
@@ -95,30 +98,32 @@ if (app.Environment.IsProduction())
 
 app.UseCors();
 
-if (useHttps)
+if (muddlrConfig.ForceHttps)
 {
     app.UseHttpsRedirection();
 }
 
-var apiAssembly = Assembly.GetExecutingAssembly().GetName();
-var apiVersion = apiAssembly.Version is not null
-    ? apiAssembly.Version.ToString()
-    : "UNK";
-
-var coreAssembly = typeof(WebFingerRecord).Assembly.GetName();
-var coreVersion = coreAssembly.Version is not null
-    ? coreAssembly.Version.ToString()
-    : "UNK";
-
-var muddlrStatus = new MuddlrStatus {ApiVersion = apiVersion, CoreVersion = coreVersion, Status = HealthStatus.Ok};
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => Results.Redirect("/health"));
-app.MapGet("/health", () => Results.Ok(muddlrStatus));
+app.MapGet("/health", () =>
+{
+    var apiAssembly = Assembly.GetExecutingAssembly().GetName();
+    var apiVersion = apiAssembly.Version is not null
+        ? apiAssembly.Version.ToString()
+        : "UNK";
+
+    var coreAssembly = typeof(WebFingerRecord).Assembly.GetName();
+    var coreVersion = coreAssembly.Version is not null
+        ? coreAssembly.Version.ToString()
+        : "UNK";
+
+    var status = new MuddlrStatus {ApiVersion = apiVersion, CoreVersion = coreVersion, Status = HealthStatus.Ok};
+    return Results.Ok(status);
+});
 app.MapWebFingerApi();
 app.MapWebFingerManagementApi();
+app.MapRazorPages();
 
 app.Run();
 

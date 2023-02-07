@@ -1,0 +1,24 @@
+﻿@page
+@model Muddlr.Api.Pages.Index
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Muddlr</title>
+</head>
+<body>
+<h1>
+    A Muddlr Server
+</h1>
+<div>
+    Core Version: @Model.CoreVersion <br />
+    Api Version: @Model.ApiVersion <br />
+    Status: @Model.ServerStatus
+</div>
+</body>
+</html>
